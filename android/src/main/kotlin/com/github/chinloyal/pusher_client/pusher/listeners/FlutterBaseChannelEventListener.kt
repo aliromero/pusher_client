@@ -18,12 +18,12 @@ open class FlutterBaseChannelEventListener: ChannelEventListener {
     override fun onEvent(event: PusherEvent) {
         Handler(Looper.getMainLooper()).post {
             try {
-                val eventJson = JSONObject(mapOf(
+                val eventJson = mapOf(
                         "channelName" to event.channelName,
                         "eventName" to event.eventName,
                         "userId" to event.userId,
                         "data" to event.data
-                ))
+                )
 
                 eventStreamJson.put("pusherEvent", eventJson)
 
@@ -41,21 +41,7 @@ open class FlutterBaseChannelEventListener: ChannelEventListener {
 
 
 
-    fun mapToJsonObject(map: Map<String, Any?>): JsonObject {
-        val jsonObject = JsonObject()
 
-        for ((key, value) in map) {
-            when (value) {
-                is String -> jsonObject.addProperty(key, value)
-                is Number -> jsonObject.addProperty(key, value)
-                is Boolean -> jsonObject.addProperty(key, value)
-                null -> null
-                else -> throw IllegalArgumentException("Unsupported type: ${value.javaClass}")
-            }
-        }
-
-        return jsonObject
-    }
 
     override fun onSubscriptionSucceeded(channelName: String) {
         val map = mapOf(
