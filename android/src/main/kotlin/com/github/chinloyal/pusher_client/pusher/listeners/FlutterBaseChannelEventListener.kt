@@ -49,7 +49,7 @@ open class FlutterBaseChannelEventListener: ChannelEventListener {
                 is String -> jsonObject.addProperty(key, value)
                 is Number -> jsonObject.addProperty(key, value)
                 is Boolean -> jsonObject.addProperty(key, value)
-                null -> jsonObject.add(key, JsonNull.INSTANCE)
+                null -> null
                 else -> throw IllegalArgumentException("Unsupported type: ${value.javaClass}")
             }
         }
