@@ -2,6 +2,8 @@ package com.github.chinloyal.pusher_client.pusher.listeners
 
 import com.github.chinloyal.pusher_client.core.utils.Constants
 import com.github.chinloyal.pusher_client.pusher.PusherService
+import com.google.gson.JsonNull
+import com.google.gson.JsonObject
 import com.pusher.client.channel.PresenceChannelEventListener
 import com.pusher.client.channel.PusherEvent
 import com.pusher.client.channel.User
@@ -13,30 +15,30 @@ class FlutterPresenceChannelEventListener: FlutterBaseChannelEventListener(), Pr
     }
 
     override fun onUsersInformationReceived(channelName: String, users: MutableSet<User>) {
-        this.onEvent(PusherEvent(mapOf(
+        this.onEvent(PusherEvent(mapToJsonObject(mapOf(
                 "event" to Constants.SUBSCRIPTION_SUCCEEDED.value,
                 "channel" to channelName,
                 "user_id" to null,
                 "data" to users.toString()
-        )))
+        ))))
     }
 
     override fun userUnsubscribed(channelName: String, user: User) {
-        this.onEvent(PusherEvent(mapOf(
+        this.onEvent(PusherEvent(mapToJsonObject(mapOf(
                 "event" to Constants.MEMBER_REMOVED.value,
                 "channel" to channelName,
                 "user_id" to user.id,
                 "data" to null
-        )))
+        ))))
     }
 
     override fun userSubscribed(channelName: String, user: User) {
-        this.onEvent(PusherEvent(mapOf(
+        this.onEvent(PusherEvent(mapToJsonObject(mapOf(
                 "event" to Constants.MEMBER_ADDED.value,
                 "channel" to channelName,
                 "user_id" to user.id,
                 "data" to null
-        )))
+        ))))
     }
 
     override fun onAuthenticationFailure(message: String, e: Exception) {
@@ -47,11 +49,29 @@ class FlutterPresenceChannelEventListener: FlutterBaseChannelEventListener(), Pr
     override fun onSubscriptionSucceeded(channelName: String) {
         PusherService.debugLog("[PRESENCE] Subscribed: $channelName")
 
-        this.onEvent(PusherEvent(mapOf(
+        this.onEvent(PusherEvent(mapToJsonObject(mapOf(
                 "event" to Constants.SUBSCRIPTION_SUCCEEDED.value,
                 "channel" to channelName,
                 "user_id" to null,
                 "data" to null
-        )))
+        ))))
     }
+
+
+}
+
+fun mapToJsonObject(map: Map<String, Any?>): JsonObject {
+    val jsonObject = JsonObject()
+
+    for ((key, value) in map) {
+        when (value) {
+            is String -> jsonObject.addProperty(key, value)
+            is Number -> jsonObject.addProperty(key, value)
+            is Boolean -> jsonObject.addProperty(key, value)
+            null -> jsonObject.add(key, JsonNull.INSTANCE)
+            else -> throw IllegalArgumentException("Unsupported type: ${value.javaClass}")
+        }
+    }
+
+    return jsonObject
 }

@@ -5,6 +5,8 @@ import android.os.Looper
 import com.github.chinloyal.pusher_client.core.utils.Constants
 import com.github.chinloyal.pusher_client.pusher.PusherService.Companion.debugLog
 import com.github.chinloyal.pusher_client.pusher.PusherService.Companion.eventSink
+import com.google.gson.JsonNull
+import com.google.gson.JsonObject
 import com.pusher.client.channel.ChannelEventListener
 import com.pusher.client.channel.PusherEvent
 import org.json.JSONObject
@@ -37,14 +39,34 @@ open class FlutterBaseChannelEventListener: ChannelEventListener {
         }
     }
 
+
+
+    fun mapToJsonObject(map: Map<String, Any?>): JsonObject {
+        val jsonObject = JsonObject()
+
+        for ((key, value) in map) {
+            when (value) {
+                is String -> jsonObject.addProperty(key, value)
+                is Number -> jsonObject.addProperty(key, value)
+                is Boolean -> jsonObject.addProperty(key, value)
+                null -> jsonObject.add(key, JsonNull.INSTANCE)
+                else -> throw IllegalArgumentException("Unsupported type: ${value.javaClass}")
+            }
+        }
+
+        return jsonObject
+    }
+
     override fun onSubscriptionSucceeded(channelName: String) {
-        this.onEvent(PusherEvent(mapOf(
-                "event" to Constants.SUBSCRIPTION_SUCCEEDED.value,
-                "channel" to channelName,
-                "user_id" to null,
-                "data" to null
-        )))
-        debugLog("[PUBLIC] Subscribed: $channelName")
+        val map = mapOf(
+            "event" to Constants.SUBSCRIPTION_SUCCEEDED.value,
+            "channel" to "yourChannelName",
+            "user_id" to null,
+            "data" to null
+        )
+
+        val jsonObject = mapToJsonObject(map)
+        this.onEvent(PusherEvent(jsonObject))
 
     }
 }
